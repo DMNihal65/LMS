@@ -8,6 +8,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminUsers from './components/AdminUsers';
 import AdminProducts from './components/AdminProducts';
 import AdminLicenses from './components/AdminLicenses';
+import AdminPurchases from './components/AdminPurchases';
 import UserDashboard from './components/UserDashboard';
 import UserProducts from './components/UserProducts';
 import UserLicenses from './components/UserLicenses';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AdminUsers /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute allowedRoles={['admin']}><AdminProducts /></ProtectedRoute>} />
           <Route path="/admin/licenses" element={<ProtectedRoute allowedRoles={['admin']}><AdminLicenses /></ProtectedRoute>} />
+          <Route path="/admin/purchases" element={<ProtectedRoute allowedRoles={['admin']}><AdminPurchases /></ProtectedRoute>} />
           <Route path="/user/dashboard" element={<ProtectedRoute allowedRoles={['user', 'admin']}><UserDashboard /></ProtectedRoute>} />
           <Route path="/user/products" element={<ProtectedRoute allowedRoles={['user', 'admin']}><UserProducts /></ProtectedRoute>} />
           <Route path="/user/licenses" element={<ProtectedRoute allowedRoles={['user', 'admin']}><UserLicenses /></ProtectedRoute>} />
