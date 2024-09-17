@@ -1,21 +1,62 @@
 import React from 'react';
-import Navbar from './Navbar';
-import { Typography } from 'antd';
+import { Typography, Card, Row, Col, Statistic } from 'antd';
+import { UserOutlined, ShoppingOutlined, KeyOutlined, DollarOutlined } from '@ant-design/icons';
+import Layout from './Layout';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 const AdminDashboard = () => {
+  // In a real application, you would fetch these statistics from your backend
+  const stats = {
+    users: 150,
+    products: 25,
+    licenses: 200,
+    revenue: 15000
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar role="admin" />
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <Title level={2}>Admin Dashboard</Title>
-        <Paragraph>
-          Welcome to the admin dashboard! Here you can manage users, licenses, and more.
-        </Paragraph>
-        {/* Add more admin-specific content here */}
-      </div>
-    </div>
+    <Layout>
+      <Title level={2}>Admin Dashboard</Title>
+      <Row gutter={16}>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Users"
+              value={stats.users}
+              prefix={<UserOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Products"
+              value={stats.products}
+              prefix={<ShoppingOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Active Licenses"
+              value={stats.licenses}
+              prefix={<KeyOutlined />}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Revenue"
+              value={stats.revenue}
+              prefix={<DollarOutlined />}
+              precision={2}
+            />
+          </Card>
+        </Col>
+      </Row>
+    </Layout>
   );
 };
 
