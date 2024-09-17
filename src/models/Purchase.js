@@ -6,10 +6,10 @@ const purchaseSchema = new mongoose.Schema({
   licenseId: { type: mongoose.Schema.Types.ObjectId, ref: 'License' },
   amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  paymentMethod: String,
-  transactionId: String,
+  paymentMethod: { type: String },
+  transactionId: { type: String },
   approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  approvedAt: Date,
+  approvedAt: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Purchase', purchaseSchema);
