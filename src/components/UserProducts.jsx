@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Row, Col, Button, message } from 'antd';
+import { Typography, Card, Row, Col, Button, message, Modal, Form, Select, Checkbox, Descriptions } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import Layout from './Layout';
 import axios from 'axios';
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
+const { Option } = Select;
 
 const UserProducts = () => {
   const [products, setProducts] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isLicenseModalVisible, setIsLicenseModalVisible] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchProducts();
@@ -22,14 +27,30 @@ const UserProducts = () => {
     }
   };
 
-  const handlePurchase = async (productId) => {
+  const showPurchaseModal = (product) => {
+    setSelectedProduct(product);
+    setIsModalVisible(true);
+  };
+
+  const showLicenseAgreement = () => {
+    setIsLicenseModalVisible(true);
+  };
+
+  const handlePurchase = async (values) => {
     try {
-      await axios.post('http://localhost:5000/api/purchases', { productId }, {
+      await axios.post('http://localhost:5000/api/purchases', {
+        productId: selectedProduct._id,
+        licenseType: values.licenseType,
+        quantity: values.quantity,
+        agreedToTerms: values.agreedToTerms
+      }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
-      message.success('Product purchased successfully');
+      message.success('Purchase request submitted successfully. Awaiting approval.');
+      setIsModalVisible(false);
+      form.resetFields();
     } catch (error) {
-      message.error('Failed to purchase product');
+      message.error('Failed to submit purchase request: ' + error.response?.data?.message || error.message);
     }
   };
 
@@ -41,14 +62,87 @@ const UserProducts = () => {
           <Col span={8} key={product._id}>
             <Card
               title={product.name}
-              extra={<Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => handlePurchase(product._id)}>Purchase</Button>}
+              extra={<Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => showPurchaseModal(product)}>Purchase</Button>}
             >
               <Paragraph>{product.description}</Paragraph>
-              <Paragraph strong>Price: ${product.price.toFixed(2)}</Paragraph>
+              <Paragraph strong>Starting from: ${product.price.toFixed(2)}</Paragraph>
             </Card>
           </Col>
         ))}
       </Row>
+      <Modal
+        title={`Purchase ${selectedProduct?.name}`}
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        <Descriptions title="Product Details" bordered column={1}>
+          <Descriptions.Item label="Name">{selectedProduct?.name}</Descriptions.Item>
+          <Descriptions.Item label="Description">{selectedProduct?.description}</Descriptions.Item>
+          <Descriptions.Item label="Version">{selectedProduct?.version}</Descriptions.Item>
+          <Descriptions.Item label="Features">{selectedProduct?.features.join(', ')}</Descriptions.Item>
+          <Descriptions.Item label="System Requirements">{selectedProduct?.systemRequirements}</Descriptions.Item>
+        </Descriptions>
+        <Form form={form} onFinish={handlePurchase} layout="vertical" style={{ marginTop: '20px' }}>
+          <Form.Item name="licenseType" label="License Type" rules={[{ required: true }]}>
+            <Select>
+              {selectedProduct?.licenseTypes.map(type => (
+                <Option key={type.type} value={type.type}>
+                  {type.type} - ${type.price.toFixed(2)} {type.duration > 0 ? `(${type.duration} days)` : ''}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="quantity" label="Quantity" rules={[{ required: true }]}>
+            <Select>
+              {[1, 2, 3, 4, 5].map(num => (
+                <Option key={num} value={num}>{num}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="link" onClick={showLicenseAgreement}>Read License Agreement</Button>
+          </Form.Item>
+          <Form.Item name="agreedToTerms" valuePropName="checked" rules={[{ required: true, message: 'You must agree to the terms' }]}>
+            <Checkbox>I agree to the license terms and conditions</Checkbox>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Submit Purchase Request
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        title="License Agreement"
+        visible={isLicenseModalVisible}
+        onCancel={() => setIsLicenseModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setIsLicenseModalVisible(false)}>
+            Close
+          </Button>
+        ]}
+      >
+        <Typography>
+          <Paragraph>
+            This is a placeholder for the license agreement. In a real application, you would include the full text of your license agreement here.
+          </Paragraph>
+          <Paragraph>
+            The license agreement should cover:
+          </Paragraph>
+          <ul>
+            <li>Terms of use for the software</li>
+            <li>Limitations of liability</li>
+            <li>Intellectual property rights</li>
+            <li>Support and maintenance terms</li>
+            <li>Termination conditions</li>
+          </ul>
+          <Paragraph>
+            <Text strong>Please read the full license agreement before agreeing to the terms and conditions.</Text>
+          </Paragraph>
+        </Typography>
+      </Modal>
     </Layout>
   );
 };

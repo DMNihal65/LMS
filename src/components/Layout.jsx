@@ -7,7 +7,8 @@ import {
   ShoppingOutlined,
   KeyOutlined,
   BarChartOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  ShoppingCartOutlined
 } from '@ant-design/icons';
 
 const { Sider, Content } = AntLayout;
@@ -16,19 +17,22 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem('user'));
 
-  const menuItems = user.role === 'admin' 
-    ? [
-        { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-        { key: '/admin/users', icon: <UserOutlined />, label: 'Users' },
-        { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Products' },
-        { key: '/admin/licenses', icon: <KeyOutlined />, label: 'Licenses' },
-        { key: '/admin/analytics', icon: <BarChartOutlined />, label: 'Analytics' },
-      ]
-    : [
-        { key: '/user/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-        { key: '/user/products', icon: <ShoppingOutlined />, label: 'Products' },
-        { key: '/user/licenses', icon: <KeyOutlined />, label: 'My Licenses' },
-      ];
+  const adminMenuItems = [
+    { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/admin/users', icon: <UserOutlined />, label: 'Users' },
+    { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Products' },
+    { key: '/admin/licenses', icon: <KeyOutlined />, label: 'Licenses' },
+    { key: '/admin/purchases', icon: <ShoppingCartOutlined />, label: 'Purchases' },
+    { key: '/admin/analytics', icon: <BarChartOutlined />, label: 'Analytics' },
+  ];
+
+  const userMenuItems = [
+    { key: '/user/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/user/products', icon: <ShoppingOutlined />, label: 'Products' },
+    { key: '/user/licenses', icon: <KeyOutlined />, label: 'My Licenses' },
+  ];
+
+  const menuItems = user.role === 'admin' ? adminMenuItems : userMenuItems;
 
   return (
     <AntLayout className="min-h-screen">
@@ -69,6 +73,6 @@ const Layout = ({ children }) => {
       </AntLayout>
     </AntLayout>
   );
-};
+}
 
 export default Layout;
