@@ -58,20 +58,14 @@ const UserProducts = ({ onPurchase }) => {
   };
 
   return (
-    <Layout>
+    <div>
       <Title level={2}>Available Products</Title>
       <Row gutter={[16, 16]}>
         {products.map(product => (
           <Col xs={24} sm={12} md={8} lg={6} key={product._id}>
             <Card
               hoverable
-              cover={
-                <img 
-                  alt={product.name} 
-                  src={`http://localhost:5000/api/products/image/${product._id}`}
-                  style={{ height: 200, objectFit: 'cover' }}
-                />
-              }
+              cover={<img alt={product.name} src={product.imageUrl || 'https://via.placeholder.com/300'} style={{ height: 200, objectFit: 'cover' }} />}
               actions={[
                 <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => showPurchaseModal(product)}>
                   Purchase
@@ -164,7 +158,7 @@ const UserProducts = ({ onPurchase }) => {
           </Paragraph>
         </Typography>
       </Modal>
-    </Layout>
+    </div>
   );
 };
 

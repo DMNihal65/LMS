@@ -137,6 +137,7 @@ const AdminPurchases = () => {
           <>
             <Descriptions title="Purchase Details" bordered column={1}>
               <Descriptions.Item label="User">{selectedPurchase.userId.name}</Descriptions.Item>
+              <Descriptions.Item label="User Email">{selectedPurchase.userId.email}</Descriptions.Item>
               <Descriptions.Item label="Product">{selectedPurchase.productId.name}</Descriptions.Item>
               <Descriptions.Item label="License Type">{selectedPurchase.licenseType}</Descriptions.Item>
               <Descriptions.Item label="Quantity">{selectedPurchase.quantity}</Descriptions.Item>

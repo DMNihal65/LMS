@@ -62,31 +62,13 @@ const UserProducts = ({ onPurchase }) => {
       <Title level={2}>Available Products</Title>
       <Row gutter={[16, 16]}>
         {products.map(product => (
-          <Col xs={24} sm={12} md={8} lg={6} key={product._id}>
+          <Col span={8} key={product._id}>
             <Card
-              hoverable
-              cover={
-                <img 
-                  alt={product.name} 
-                  src={`http://localhost:5000/api/products/image/${product._id}`}
-                  style={{ height: 200, objectFit: 'cover' }}
-                />
-              }
-              actions={[
-                <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => showPurchaseModal(product)}>
-                  Purchase
-                </Button>
-              ]}
+              title={product.name}
+              extra={<Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => showPurchaseModal(product)}>Purchase</Button>}
             >
-              <Card.Meta
-                title={product.name}
-                description={
-                  <>
-                    <Paragraph ellipsis={{ rows: 2 }}>{product.description}</Paragraph>
-                    <Text strong>Starting from: ${product.price.toFixed(2)}</Text>
-                  </>
-                }
-              />
+              <Paragraph>{product.description}</Paragraph>
+              <Paragraph strong>Starting from: ${product.price.toFixed(2)}</Paragraph>
             </Card>
           </Col>
         ))}
@@ -168,4 +150,4 @@ const UserProducts = ({ onPurchase }) => {
   );
 };
 
-export default UserProducts;
+export default UserProductsDashboard;

@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Typography, Button, Tag, message } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Table, Typography, Button, message, Modal, Form, Input, Select } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import Layout from './Layout';
 import axios from 'axios';
 
 const { Title } = Typography;
+const { Option } = Select;
 
 const AdminLicenses = () => {
   const [licenses, setLicenses] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingLicense, setEditingLicense] = useState(null);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchLicenses();
@@ -24,12 +28,38 @@ const AdminLicenses = () => {
     }
   };
 
+  const showEditModal = (license) => {
+    setEditingLicense(license);
+    form.setFieldsValue(license);
+    setIsModalVisible(true);
+  };
+
+  const handleEdit = async (values) => {
+    try {
+      await axios.put(`http://localhost:5000/api/licenses/${editingLicense._id}`, values, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      message.success('License updated successfully');
+      setIsModalVisible(false);
+      fetchLicenses();
+    } catch (error) {
+      message.error('Failed to update license');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/licenses/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      message.success('License deleted successfully');
+      fetchLicenses();
+    } catch (error) {
+      message.error('Failed to delete license');
+    }
+  };
+
   const columns = [
-    {
-      title: 'License Key',
-      dataIndex: 'licenseKey',
-      key: 'licenseKey',
-    },
     {
       title: 'User',
       dataIndex: ['userId', 'name'],
@@ -41,62 +71,64 @@ const AdminLicenses = () => {
       key: 'product',
     },
     {
+      title: 'License Key',
+      dataIndex: 'licenseKey',
+      key: 'licenseKey',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+    },
+    {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={status === 'active' ? 'green' : 'red'}>
-          {status.toUpperCase()}
-        </Tag>
-      ),
     },
     {
       title: 'Actions',
       key: 'actions',
-      render: (text, record) => (
+      render: (_, record) => (
         <span>
-          {record.status === 'active' ? (
-            <Button icon={<CloseOutlined />} onClick={() => handleDeactivate(record)} danger>
-              Deactivate
-            </Button>
-          ) : (
-            <Button icon={<CheckOutlined />} onClick={() => handleActivate(record)} type="primary">
-              Activate
-            </Button>
-          )}
+          <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ marginRight: 8 }}>
+            Edit
+          </Button>
+          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record._id)} danger>
+            Delete
+          </Button>
         </span>
       ),
     },
   ];
 
-  const handleActivate = async (license) => {
-    try {
-      await axios.put(`http://localhost:5000/api/licenses/${license._id}`, { status: 'active' }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      message.success('License activated successfully');
-      fetchLicenses();
-    } catch (error) {
-      message.error('Failed to activate license');
-    }
-  };
-
-  const handleDeactivate = async (license) => {
-    try {
-      await axios.put(`http://localhost:5000/api/licenses/${license._id}`, { status: 'inactive' }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      message.success('License deactivated successfully');
-      fetchLicenses();
-    } catch (error) {
-      message.error('Failed to deactivate license');
-    }
-  };
-
   return (
     <Layout>
-      <Title level={2}>Licenses Management</Title>
+      <Title level={2}>License Management</Title>
       <Table columns={columns} dataSource={licenses} rowKey="_id" />
+      <Modal
+        title="Edit License"
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        <Form form={form} onFinish={handleEdit} layout="vertical">
+          <Form.Item name="type" label="License Type" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="status" label="Status" rules={[{ required: true }]}>
+            <Select>
+              <Option value="active">Active</Option>
+              <Option value="expired">Expired</Option>
+              <Option value="revoked">Revoked</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              Update License
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 };
