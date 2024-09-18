@@ -2,25 +2,35 @@ const Purchase = require('../models/Purchase');
 const Product = require('../models/Product');
 const License = require('../models/License');
 const User = require('../models/User');
-const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 // Create purchase
 exports.createPurchase = async (req, res) => {
   try {
-    const { productId } = req.body;
-    const userId = req.user.id; // Assuming you have user info in the request after authentication
+    const { productId, licenseType, quantity, agreedToTerms } = req.body;
+    const userId = req.user.id;
 
-    // Fetch the product to get its price
+    if (!agreedToTerms) {
+      return res.status(400).json({ message: 'You must agree to the terms and conditions' });
+    }
+
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
+    const licenseTypeInfo = product.licenseTypes.find(lt => lt.type === licenseType);
+    if (!licenseTypeInfo) {
+      return res.status(400).json({ message: 'Invalid license type' });
+    }
+
     const purchase = new Purchase({
       userId,
       productId,
-      amount: product.price, // Use the product's price
+      licenseType,
+      quantity,
+      amount: licenseTypeInfo.price * quantity,
+      status: 'pending'
     });
 
     await purchase.save();
@@ -82,6 +92,7 @@ exports.deletePurchase = async (req, res) => {
 // Approve purchase
 exports.approvePurchase = async (req, res) => {
   try {
+    const { licenseKey } = req.body;
     const purchase = await Purchase.findById(req.params.id).populate('productId').populate('userId');
     if (!purchase) {
       return res.status(404).json({ message: 'Purchase not found' });
@@ -90,15 +101,12 @@ exports.approvePurchase = async (req, res) => {
       return res.status(400).json({ message: 'Purchase is not pending' });
     }
 
-    // Generate a license key
-    const licenseKey = crypto.randomBytes(16).toString('hex');
-
     // Create a new license
     const license = new License({
       userId: purchase.userId._id,
       productId: purchase.productId._id,
       licenseKey,
-      type: 'perpetual', // or 'subscription' based on your business logic
+      type: purchase.licenseType, // This should now match the custom type from the product
       startDate: new Date(),
       status: 'active'
     });
@@ -127,6 +135,8 @@ exports.approvePurchase = async (req, res) => {
         <h1>Purchase Approved</h1>
         <p>Your purchase for ${purchase.productId.name} has been approved.</p>
         <p>License Key: ${licenseKey}</p>
+        <p>License Type: ${purchase.licenseType}</p>
+        <p>Quantity: ${purchase.quantity}</p>
         <p>Product Details:</p>
         <ul>
           <li>Name: ${purchase.productId.name}</li>
