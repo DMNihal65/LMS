@@ -1,18 +1,22 @@
 const jwt = require('jsonwebtoken');
 
 const authenticateToken = (req, res, next) => {
+  console.log('Entering authenticateToken middleware');
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (token == null) return res.sendStatus(401);
+  if (token == null) {
+    console.log('No token found');
+    return res.sendStatus(401);
+  }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
       console.error('Token verification failed:', err);
       return res.sendStatus(403);
     }
+    console.log('Token verified, user:', user);
     req.user = user;
-    console.log('Authenticated user:', user); // Add this line for debugging
     next();
   });
 };

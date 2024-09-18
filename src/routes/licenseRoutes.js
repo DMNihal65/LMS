@@ -3,6 +3,12 @@ const router = express.Router();
 const licenseController = require('../controllers/licenseController');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
 
+// Move the /user route to the top
+router.get('/user', authenticateToken, (req, res, next) => {
+  console.log('Authenticated user in /user route:', req.user);
+  next();
+}, licenseController.getUserLicenses);
+
 router.post('/', authenticateToken, authorizeRole(['admin']), licenseController.createLicense);
 router.get('/', authenticateToken, licenseController.getAllLicenses);
 router.get('/:id', authenticateToken, licenseController.getLicenseById);

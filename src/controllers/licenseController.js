@@ -1,5 +1,7 @@
 const License = require('../models/License');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 // Create license
 exports.createLicense = async (req, res) => {
@@ -16,7 +18,9 @@ exports.createLicense = async (req, res) => {
 // Get all licenses
 exports.getAllLicenses = async (req, res) => {
   try {
-    const licenses = await License.find();
+    const licenses = await License.find()
+      .populate('userId', 'name email')
+      .populate('productId', 'name');
     res.json(licenses);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching licenses', error });
@@ -101,3 +105,25 @@ exports.activateLicense = async (req, res) => {
     res.status(500).json({ message: 'Error activating license', error });
   }
 };
+
+// Get user licenses
+exports.getUserLicenses = async (req, res) => {
+  console.log("Entering getUserLicenses function");
+  try {
+    console.log('User from request:', req.user);
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    const licenses = await License.find({ userId: userId }).populate('productId');
+    console.log('Licenses found:', licenses);
+    res.json(licenses);
+  } catch (error) {
+    console.error('Error in getUserLicenses:', error);
+    res.status(500).json({ message: 'Error fetching user licenses', error: error.message });
+  }
+};
+
+// Add other license-related controller methods here
